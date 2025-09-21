@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #e3f2fd; /* Light blue theme */
+}
+
+.container {
+    max-width: 900px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#credibilityScore {
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    display: inline-block;
+    margin-top: 0.5rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.high {
+    background-color: #a7f3d0;
+    color: #065f46;
+}
+
+.medium {
+    background-color: #fde68a;
+    color: #b45309;
+}
+
+.low {
+    background-color: #fca5a5;
+    color: #991b1b;
+}
+
+.unverified {
+    background-color: #d1d5db;
+    color: #374151;
+}
+
+ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+    color: #4b5563;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+input[type="radio"] + label {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #93c5fd;
+    color: #1e40af;
+    background-color: #dbeafe;
+    transition: all 0.2s;
+}
+
+input[type="radio"]:checked + label {
+    background-color: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.input-group {
+    display: none;
+}
+
+.input-group.active {
+    display: block;
+}
+
+.image-preview-container {
+    position: relative;
+    display: inline-block;
+}
+
+.image-preview-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background-color: rgba(239, 68, 68, 0.8);
+    color: white;
+    border-radius: 9999px;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.image-preview-close:hover {
+    background-color: rgb(239, 68, 68);
+}
