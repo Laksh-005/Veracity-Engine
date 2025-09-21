@@ -115,21 +115,6 @@
         .image-preview-close:hover {
             background-color: rgb(239, 68, 68);
         }
-        .history-item {
-            cursor: pointer;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            background-color: #f0f9ff;
-            border: 1px solid #dbeafe;
-            transition: all 0.2s;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-        .history-item:hover {
-            background-color: #e0f2fe;
-            border-color: #93c5fd;
-        }
     </style>
 </head>
 <body class="bg-blue-50 flex items-center justify-center min-h-screen p-4">
@@ -191,25 +176,10 @@
             An error occurred. Please try again.
         </div>
         
-        <div id="historySection" class="mt-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Search History</h2>
-            <div id="historyList" class="space-y-2">
-                <!-- History items will be loaded here dynamically -->
-                <p class="text-gray-500 text-center">Your search history will appear here.</p>
-            </div>
-        </div>
-
-        <div id="userIdDisplay" class="mt-8 text-center text-xs text-gray-400">
-            User ID: <span id="userIdValue"></span>
-        </div>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+<script>
     const inputRadios = document.querySelectorAll('input[name="input-type"]');
     const inputGroups = document.querySelectorAll('.input-group');
     const claimInput = document.getElementById('claimInput');
@@ -223,77 +193,6 @@
     const summaryList = document.getElementById('summaryList');
     const citationsList = document.getElementById('citationsList');
     const errorBox = document.getElementById('errorBox');
-    const historyList = document.getElementById('historyList');
-    const userIdDisplay = document.getElementById('userIdValue');
-
-    let db;
-    let auth;
-    let userId = null;
-    let isAuthReady = false;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-    // Firebase Initialization
-    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-    if (Object.keys(firebaseConfig).length > 0) {
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                userIdDisplay.textContent = userId;
-                isAuthReady = true;
-                listenToSearchHistory();
-            } else {
-                isAuthReady = true;
-                userId = 'anonymous_' + crypto.randomUUID();
-                userIdDisplay.textContent = userId;
-                listenToSearchHistory();
-            }
-        });
-
-        // Sign in with custom token if available, otherwise anonymously
-        (async () => {
-            if (typeof __initial_auth_token !== 'undefined') {
-                try {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } catch (error) {
-                    console.error("Error signing in with custom token:", error);
-                    await signInAnonymously(auth);
-                }
-            } else {
-                await signInAnonymously(auth);
-            }
-        })();
-    } else {
-        console.error("Firebase config is missing.");
-    }
-
-    function listenToSearchHistory() {
-        if (!isAuthReady || !db) return;
-        const historyPath = `artifacts/${appId}/users/${userId}/search_history`;
-        const q = query(collection(db, historyPath));
-
-        onSnapshot(q, (snapshot) => {
-            historyList.innerHTML = ''; // Clear previous list
-            if (snapshot.empty) {
-                historyList.innerHTML = '<p class="text-gray-500 text-center">Your search history will appear here.</p>';
-            } else {
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const historyItem = document.createElement('div');
-                    historyItem.classList.add('history-item');
-                    historyItem.textContent = data.query;
-                    historyItem.addEventListener('click', () => {
-                        // Restore the previous search result
-                        displayResults(data.result);
-                    });
-                    historyList.appendChild(historyItem);
-                });
-            }
-        });
-    }
 
     inputRadios.forEach(radio => {
         radio.addEventListener('change', () => {
@@ -383,9 +282,9 @@
         try {
             const systemPrompt = `You are a professional fact-checker and misinformation analyst. Your task is to analyze a given claim, which may be text, a URL, or an image. Assess its credibility based on external sources, and present your findings in a clear, structured format. You must determine a credibility score and provide a bulleted summary of your analysis.`;
             let userQueryText = `Analyze the credibility of the following content: "${userClaim}". Based on your analysis, please provide:
-1. A credibility score. Use one of the following labels: 'High Credibility', 'Medium Credibility', 'Low Credibility', or 'Unverified'.
-2. A bulleted summary of your findings. The summary should explain why you assigned that score and reference the sources you used.`;
-            
+    1. A credibility score. Use one of the following labels: 'High Credibility', 'Medium Credibility', 'Low Credibility', or 'Unverified'.
+    2. A bulleted summary of your findings. The summary should explain why you assigned that score and reference the sources you used.`;
+                
             if (inputType === 'url') {
                 userQueryText += ` Additionally, check if this URL is associated with any known security threats like malware or phishing.`;
             }
@@ -451,19 +350,6 @@
             const candidate = result.candidates?.[0];
 
             if (candidate && candidate.content?.parts?.[0]?.text) {
-                // Save the search result to Firestore
-                if (isAuthReady && db) {
-                    const historyPath = `artifacts/${appId}/users/${userId}/search_history`;
-                    await addDoc(collection(db, historyPath), {
-                        query: userClaim,
-                        result: {
-                            text: candidate.content.parts[0].text,
-                            groundingMetadata: candidate.groundingMetadata
-                        },
-                        timestamp: serverTimestamp()
-                    });
-                }
-
                 displayResults({
                     text: candidate.content.parts[0].text,
                     groundingMetadata: candidate.groundingMetadata
